@@ -1,4 +1,4 @@
-from tokenfactory import TokenFactory
+from .tokenfactory import TokenFactory
 import requests
 
 class apigeeEdgeManagementAPI():

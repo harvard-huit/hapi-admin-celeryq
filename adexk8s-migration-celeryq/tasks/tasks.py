@@ -1,6 +1,6 @@
 from celery import Celery
 import celeryconfig
-from migrationEdgeX import apigeeEdgeManagementAPI
+from .migration import apigeeEdgeManagementAPI
 
 app = Celery()
 app.config_from_object(celeryconfig)

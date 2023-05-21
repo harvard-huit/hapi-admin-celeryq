@@ -1,6 +1,6 @@
 from celery import Celery
 import celeryconfig
-from .migration import apigeeEdgeManagementAPI
+from .migration import apigeeEdgeManagementAPI, apigeeXManagementAPI
 
 app = Celery()
 app.config_from_object(celeryconfig)
@@ -34,4 +34,45 @@ def getProductsAppsbyProxy(org_name,proxy,hide_keys=True):
     result=eapi.list_products_with_apps_developers_for_proxy(proxy,hide_keys=hide_keys)
     return result
 
-
+@app.task()
+def batchDeveloperWorkflow(source_org,destination_project):
+    """
+    Sync Developer between Apigee Edge and Apigee X
+    :params source_org string Apigee Edge Organization
+    :params destination_project string Apigee X Project
+    """
+    service_account_key_paths={
+        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test-67bd52e7ac87.json",
+        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev-2feabb8ca26d.json"
+        }
+    api=apigeeXManagementAPI(source_org,destination_project,service_account_key_paths)
+    results=api.batchMigrateDeveloper()
+    return results
+@app.task()
+def batchProductWorkflow(source_org,destination_project):
+    """
+    Sync Products between Apigee Edge and Apigee X
+    :params source_org string Apigee Edge Organization
+    :params destination_project string Apigee X Project
+    """
+    service_account_key_paths={
+        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test-67bd52e7ac87.json",
+        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev-2feabb8ca26d.json"
+        }
+    api=apigeeXManagementAPI(source_org,destination_project,service_account_key_paths)
+    results=api.batchMigrateProducts()
+    return results
+@app.task()
+def batchAppsWorkflow(source_org,destination_project):
+    """
+    Sync Apps between Apigee Edge and Apigee X
+    :params source_org string Apigee Edge Organization
+    :params destination_project string Apigee X Project
+    """
+    service_account_key_paths={
+        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test-67bd52e7ac87.json",
+        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev-2feabb8ca26d.json"
+        }
+    api=apigeeXManagementAPI(source_org,destination_project,service_account_key_paths)
+    results=api.batchMigrateApps()
+    return results

@@ -1,4 +1,4 @@
-from tokenfactory import TokenFactory, GoogleCloudAuthenticator
+from .tokenfactory import TokenFactory, GoogleCloudAuthenticator
 from pprint import pprint
 from copy import deepcopy, copy
 
@@ -102,7 +102,7 @@ class apigeeXManagementAPI():
         except:
             result={"status_code":req.status_code,"text":req.text}
         return result
-    def batchCreateProducts(self):
+    def batchMigrateProducts(self):
         products=self.getEdgeProducts()
         result={"Created":0,"Updated":0}
         for itm in products['apiProduct']:
@@ -135,15 +135,15 @@ class apigeeXManagementAPI():
         headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
         data=self.processRequest(endpoint_url,headers)
         return data
-        if getOperations:
-            operations={}
-            print(data)
-            for proxies in data['proxies']:
-                operations_url=f"{self.base_x_url}/{self.project_name}/apis/{proxies}/operations"
-                test=self.processRequest(operations_url,headers)
-                operations[proxies]=test
-            pprint(operations)
-        return data
+        # if getOperations:
+        #     operations={}
+        #     print(data)
+        #     for proxies in data['proxies']:
+        #         operations_url=f"{self.base_x_url}/{self.project_name}/apis/{proxies}/operations"
+        #         test=self.processRequest(operations_url,headers)
+        #         operations[proxies]=test
+        #     pprint(operations)
+        # return data
     def setXProduct(self,data,tenant="adex"):
         endpoint_url=f"{self.base_x_url}/{self.project_name}/apiproducts"
         headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
@@ -164,24 +164,19 @@ class apigeeXManagementAPI():
         }
         method='post'
         existing_products=self.getXProducts()
+        if 'apiProduct' not in existing_products:
+            existing_products['apiProduct']=[]
         if self.filter_dicts_by_key_value('name', product_payload['name'], existing_products['apiProduct']):
             endpoint_url=f"{self.base_x_url}/{self.project_name}/apiproducts/{product_payload['name']}"
             method='put'
         result=self.processRequest(endpoint_url,headers,method=method,data=product_payload)
-        #pprint(result)
         return result,method
     def filter_dicts_by_key_value(self,key, value, list_of_dicts):
+        """
+        Helper Funciton
+        """
         filtered_list = list(filter(lambda d: d.get(key) == value, list_of_dicts))
         return filtered_list
-    # def getEdgeApps(self,developer_email):
-    #     endpoint_url = f"{self.base_edge_url}/{self.org_name}/developers/{developer_email}/apps"
-    #     headers = {"Authorization": f"{self.edgeTokenFactory.token}"}
-    #     data=self.processRequest(endpoint_url,headers)
-    #     return data
-
-    # def getXApps(self):
-    #     endpoint_url = f"https://api.enterprise.apigee.com/v1/organizations/{self.org_name}/apps"
-    #     developers_endpoint_url = f"https://api.enterprise.apigee.com/v1/organizations/{self.org_name}/developers"
     def getEdgeDevelopers(self,developers_email=None):
         """
         Function will return a list of all developers
@@ -212,19 +207,8 @@ class apigeeXManagementAPI():
         endpoint_url = f"{self.base_edge_url}/{self.org_name}/teams"
         headers = {"Authorization": f"{self.edgeTokenFactory.token}"}
         data=self.processRequest(endpoint_url,headers)
-        pprint(data)
+        #pprint(data)
         return data
-    # def getEdgeDeveloper(self, username):
-    #     """
-    #     Function will return details of a developer
-    #     Args: org_name (str), email (str)
-    #     Result: detail developer record
-    #     """
-    #     endpoint_url = f"{self.base_edge_url}/{self.org_name}/developers/{username}"
-    #     headers = {"Authorization": f"{self.edgeTokenFactory.token}"}
-    #     data=self.processRequest(endpoint_url,headers)
-        
-    #     return data
     def batchMigrateDeveloper(self):
         devs=self.getEdgeDevelopers()
         results={"created":0,"alreadyExisted":0,"otherErrors":0}
@@ -247,39 +231,42 @@ class apigeeXManagementAPI():
         data=self.processRequest(endpoint_url,headers,method='post',data=data)
         #pprint(data)
         return data
-    def setSingleXApp(self,delevoper_email,app_name):
-        app=self.getEdgeApps(delevoper_email,app_name)
-        data=self.setXApp(delevoper_email,app)
-        data=self.getXApps(delevoper_email,app_name)
+    def setSingleXApp(self,developer_email,app_name):
+        app=self.getEdgeApps(developer_email,app_name)
+        data=self.setXApp(developer_email,app)
+        data=self.getXApps(developer_email,app_name)
         #Delete new keys
-        for key in data['credentials']:
-            self.deleteXKey(app_name,delevoper_email,key['consumerKey'])
+        if 'credentials' in data:
+            for key in data['credentials']:
+                self.deleteXKey(app_name,developer_email,key['consumerKey'])
         #Add Edge Keys
-        self.setXKey(app_name,delevoper_email)
-        return self.getXApps(delevoper_email,app_name)
+        self.setXKey(app_name,developer_email)
+        return self.getXApps(developer_email,app_name)
         
-    def batchCreateApps(self):
+    def batchMigrateApps(self):
+        """
+        Migrate entire list of Apps for all Developers
+        """
         devs=self.getEdgeDevelopers()
-        results={"created":0,"alreadyExisted":0,"otherErrors":0}
+        results={"developersCreatedUpdated":0,"error":0}
         for dev in devs:
             apps=self.getEdgeApps(dev)
             for app in apps['app']:
-                data=self.setXApp(dev,app)
-                #Delete new keys
-                for key in data['credentials']:
-                    self.deleteXKey(app['name'],dev,key['consumerKey'])
-                #Add Edge Keys
-                self.setXKey(app['name'],dev)
-
+                data=self.setSingleXApp(dev,app['name'])
                 if 'error' in data:
-                    if data['error']['code']==409:
-                        results["alreadyExisted"]=results["alreadyExisted"] +1
-                    else:
-                        results["otherErrors"]=results["otherErrors"] +1
+                    results["error"]=results["error"] +1
+                    # if data['error']['code']==409:
+                    #     results["alreadyExisted"]=results["alreadyExisted"] +1
+                    # else:
+                    #     results["otherErrors"]=results["otherErrors"] +1
+                    #     print(data)
                 else:
-                    results["created"]=results["created"] +1
+                    results["developersCreatedUpdated"]=results["developersCreatedUpdated"] +1
         return results
     def cleanupEdge2X(self,data):
+        """
+        Helper function to clean up Edge to X attributes
+        """
         for itm in ["lastModifiedBy","createdBy"]:
             if itm in data:
                 del data[itm]
@@ -287,6 +274,11 @@ class apigeeXManagementAPI():
             data["email"]=data["email"].lower()
         return data
     def getEdgeApps(self,developer_email,app_name=None):
+        """
+        Returns individual or list of Apps from Apigee Edge
+        :params developer_email string developer email
+        :params app_name string Optional app name 
+        """
         if app_name:
             endpoint_url = f"{self.base_edge_url}/{self.org_name}/developers/{developer_email}/apps/{app_name}?expand=true"
         else:
@@ -296,6 +288,11 @@ class apigeeXManagementAPI():
         #pprint(data)
         return data
     def getXApps(self,developer_email,app_name=None):
+        """
+        Returns individual or list of Apps from Apigee X
+        :params developer_email string developer email
+        :params app_name string Optional app name 
+        """
         if app_name:
             endpoint_url = f"{self.base_x_url}/{self.project_name}/developers/{developer_email}/apps/{app_name}"
         else:
@@ -303,15 +300,13 @@ class apigeeXManagementAPI():
         headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
         
         data=self.processRequest(endpoint_url,headers)
-        #pprint(data)
         return data
-    # def getEdgeAppDetail(self,developer_email,app_name):
-    #     endpoint_url = f"{self.base_edge_url}/{self.org_name}/developers/{developer_email}/apps/{app_name}"
-    #     headers = {"Authorization": f"{self.edgeTokenFactory.token}"}
-    #     data=self.processRequest(endpoint_url,headers)
-    #     #pprint(data)
-    #     return data
     def setXApp(self,developer_email, data):
+        """
+        Create the new App in Apigee X
+        :params developer_email string developer email
+        :params data object App data from Apigee 
+        """
         endpoint_url = f"{self.base_x_url}/{self.project_name}/developers/{developer_email}/apps"
         headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
         method='post'
@@ -325,24 +320,23 @@ class apigeeXManagementAPI():
         result=self.processRequest(endpoint_url,headers,method=method,data=data)
         return result
     def getDisplayName(self,app_data):
+        """
+        Get the Display Name
+        params: app_data object 
+        """
         displayName=""
         for itm in app_data['attributes']:
             if itm['name']=="DisplayName":
                 displayName= itm['value']
         return displayName
-    # def setXKeyApiProducts(self,app_name,developer_email,products,key,url=None):
-    #     endpoint_url = f"{self.base_x_url}/{self.project_name}/developers/{developer_email}/apps/{app_name}/keys/{key}"
-    #     if url:
-    #         endpoint_url=url
-    #     xapp=self.getXApps(developer_email,app_name)
-    #     # displayName= self.getDisplayName(xapp)
-    #     # {"name":"DisplayName","value":displayName}
-    #     product_add={"apiProducts": products,"attributes":[]}
-    #     headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
-    #     result=self.processRequest(endpoint_url,headers,method='post',data=product_add)
-    #     return result
         
     def setXKey(self,app_name,developer_email):
+        """
+        Migrates App Keys from Apigee Edge to Apigee X
+        :params app_name string This is th app name.
+        :params developer_email string developer email
+        Return: the update Apigee X App 
+        """
         endpoint_url = f"{self.base_x_url}/{self.project_name}/developers/{developer_email}/apps/{app_name}/keys"
         headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
         #Clean up Edge to X
@@ -357,40 +351,64 @@ class apigeeXManagementAPI():
                 products.append(apiproduct['apiproduct'])
             keys=deepcopy(itm)
             keys["apiProducts"]=products
-            #products
-            # keys={
-            # "apiProducts": products,
-            # "attributes": [
-            #         {
-            #             "name": "DisplayName",
-            #             "value": f"{app_name}"
-            #         }
-            #     ],
-            # "consumerKey": itm['consumerKey'],
-            # "consumerSecret": itm['consumerSecret'],
-            # "expiresAt": "-1",
-            # "status": "approved"
-            # }
-
             # Add Credentials
             result=self.processRequest(endpoint_url,headers,method='post',data=keys)
             #Update the apiProducts
-            data=self.getXApps(developer_email,app_name)
             result['apiProducts']=products
             endpoint_url=f"{endpoint_url}/{itm['consumerKey']}"
             result=self.processRequest(endpoint_url,headers,method='put',data=result)
             for status in product_status:
                 url=f"{endpoint_url}/apiproducts/{status['apiproduct']}"
-                print(url)
+                #print(url)
                 if status['status'] != "pending": 
                     if status['status'].lower()=='approved':
                         params = {"action": 'approve'}
                     else:
                         params = {"action": 'revoke'}
-                    print(self.processRequest(url,headers,method='post',params=params,data={}))
-        return result
+                    self.processRequest(url,headers,method='post',params=params,data={})
+        # Return the finalized XApp
+        data=self.getXApps(developer_email,app_name)
+        return data
     def deleteXKey(self,app_name,developer_email,key):
+        """
+        Delete the Apigee X App Key
+        :params app_name string This is th app name.
+        :params developer_email string developer email
+        :params key string  key to be deleted
+        """
         endpoint_url = f"{self.base_x_url}/{self.project_name}/developers/{developer_email}/apps/{app_name}/keys/{key}"
         headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
         result=self.processRequest(endpoint_url,headers,method='delete')
         return result
+    def batchDeleteDevelopers(self):
+        devs = self.getXDevelopers()
+        for dev in devs:
+            endpoint_url = f"{self.base_x_url}/{self.project_name}/developers/{dev['email']}"
+            headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
+            self.processRequest(endpoint_url,headers,method='delete',data={})
+        return True
+    def batchDeleteProducts(self):
+        products=self.getXProducts()
+        for itm in products["apiProduct"]:
+            endpoint_url=f"{self.base_x_url}/{self.project_name}/apiproducts/{itm['name']}"
+            headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
+            self.processRequest(endpoint_url,headers,method='delete',data={})
+        return True
+    def batchDeleteApps(self):
+        """
+        Delete all Apps for all Developers
+        """
+        devs=self.getXDevelopers()
+        results={"created":0,"alreadyExisted":0,"otherErrors":0}
+        for dev in devs:
+            apps=self.getXApps(dev['email'])
+            print(apps)
+            if 'app' in apps:
+                for app in apps['app']:
+                    #data=self.setSingleXApp(dev,app['name'])
+                    endpoint_url = f"{self.base_x_url}/{self.project_name}/developers/{dev['email']}/apps/{app['appId']}"
+                    headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
+                    result=self.processRequest(endpoint_url,headers,method='delete',data={})
+                    print(result)
+
+        return True

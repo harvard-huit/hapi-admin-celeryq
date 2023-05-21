@@ -1,6 +1,8 @@
 #from pyconfig.pyconfig import Config, Stack
 import os, requests
 import datetime
+from google.oauth2 import service_account
+from google.auth.transport.requests import Request
 
 class TokenFactory:
     """
@@ -46,3 +48,19 @@ class TokenFactory:
 
     def is_expired(self):
         return datetime.datetime.now() > self.expires_at
+
+class GoogleCloudAuthenticator:
+    def __init__(self, service_account_key_paths):
+        self.service_account_key_paths = service_account_key_paths
+        self.scopes = ['https://www.googleapis.com/auth/cloud-platform']
+        self.credentials = {}
+    def _get_credentials(self):
+        for itm in self.service_account_key_paths:
+            if not self.credentials or not itm in self.credentials or self.credentials[itm].expired:
+                self.credentials[itm]= service_account.Credentials.from_service_account_file(
+                    self.service_account_key_paths[itm], scopes=self.scopes)
+                self.credentials[itm].refresh(Request())
+        return self.credentials
+    def token(self,project_name):
+        credentials = self._get_credentials()
+        return credentials[project_name].token

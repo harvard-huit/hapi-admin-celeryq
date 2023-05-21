@@ -1,7 +1,7 @@
 adexk8s-migration-celeryq Queue
 ======================
 
-Please add Queue description.
+Tasks to manage Apigee Consumer Apps and Developers
 
 Requirements
 ------------

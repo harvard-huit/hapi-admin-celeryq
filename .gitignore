@@ -38,3 +38,5 @@ nosetests.xml
 .env
 ansible_vars
 __pycache__
+misc
+

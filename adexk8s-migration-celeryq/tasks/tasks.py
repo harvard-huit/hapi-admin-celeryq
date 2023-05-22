@@ -42,8 +42,8 @@ def batchDeveloperWorkflow(source_org,destination_project):
     :params destination_project string Apigee X Project
     """
     service_account_key_paths={
-        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test-67bd52e7ac87.json",
-        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev-2feabb8ca26d.json"
+        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test.json",
+        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev.json"
         }
     api=apigeeXManagementAPI(source_org,destination_project,service_account_key_paths)
     results=api.batchMigrateDeveloper()
@@ -56,8 +56,8 @@ def batchProductWorkflow(source_org,destination_project):
     :params destination_project string Apigee X Project
     """
     service_account_key_paths={
-        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test-67bd52e7ac87.json",
-        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev-2feabb8ca26d.json"
+        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test.json",
+        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev.json"
         }
     api=apigeeXManagementAPI(source_org,destination_project,service_account_key_paths)
     results=api.batchMigrateProducts()
@@ -70,8 +70,8 @@ def batchAppsWorkflow(source_org,destination_project):
     :params destination_project string Apigee X Project
     """
     service_account_key_paths={
-        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test-67bd52e7ac87.json",
-        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev-2feabb8ca26d.json"
+        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test.json",
+        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev.json"
         }
     api=apigeeXManagementAPI(source_org,destination_project,service_account_key_paths)
     results=api.batchMigrateApps()

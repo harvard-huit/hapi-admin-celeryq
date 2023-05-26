@@ -1,6 +1,9 @@
 from celery import Celery
 import celeryconfig
-from .migration import apigeeEdgeManagementAPI, apigeeXManagementAPI
+try:
+    from migration import apigeeEdgeManagementAPI, apigeeXManagementAPI
+except:
+    from .migration import apigeeEdgeManagementAPI, apigeeXManagementAPI
 
 app = Celery()
 app.config_from_object(celeryconfig)

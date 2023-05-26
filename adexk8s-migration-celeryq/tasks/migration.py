@@ -1,4 +1,7 @@
-from tokenfactory import TokenFactory, GoogleCloudAuthenticator
+try:
+    from .tokenfactory import TokenFactory, GoogleCloudAuthenticator
+except:
+    from tokenfactory import TokenFactory, GoogleCloudAuthenticator
 from pprint import pprint
 from copy import deepcopy, copy
 

@@ -123,7 +123,6 @@ class apigeeXManagementAPI():
             }
         params = {"expand": True}
         data=self.processRequest(endpoint_url,headers,params=params)
-        #pprint(data)
         return data
     def getXProducts(self,product=None):
         getOperations=False
@@ -135,20 +134,9 @@ class apigeeXManagementAPI():
         headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
         data=self.processRequest(endpoint_url,headers)
         return data
-        # if getOperations:
-        #     operations={}
-        #     print(data)
-        #     for proxies in data['proxies']:
-        #         operations_url=f"{self.base_x_url}/{self.project_name}/apis/{proxies}/operations"
-        #         test=self.processRequest(operations_url,headers)
-        #         operations[proxies]=test
-        #     pprint(operations)
-        # return data
     def setXProduct(self,data,tenant="adex"):
         endpoint_url=f"{self.base_x_url}/{self.project_name}/apiproducts"
         headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
-        #apigee_env=f"{tenant}-1" # TODO This will need to include all envs for each tenant
-        # apigee_env
         product_payload = {
             'name': data['name'],
             'displayName': data.get('displayName', ""),
@@ -191,7 +179,6 @@ class apigeeXManagementAPI():
         data=self.processRequest(endpoint_url,headers)
         if not developers_email:
             data=list(filter(lambda k: 'devteam.apigee.io' not in k, data))
-        #pprint(data)
         return data
     def getXDevelopers(self,developers_email=None):
         if developers_email:
@@ -205,7 +192,6 @@ class apigeeXManagementAPI():
         endpoint_url = f"{self.base_edge_url}/{self.org_name}/teams"
         headers = {"Authorization": f"{self.edgeTokenFactory.token}"}
         data=self.processRequest(endpoint_url,headers)
-        #pprint(data)
         return data
     def batchMigrateDeveloper(self):
         devs=self.getEdgeDevelopers()

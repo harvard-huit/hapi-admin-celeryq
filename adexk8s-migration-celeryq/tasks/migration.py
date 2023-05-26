@@ -1,4 +1,4 @@
-from .tokenfactory import TokenFactory, GoogleCloudAuthenticator
+from tokenfactory import TokenFactory, GoogleCloudAuthenticator
 from pprint import pprint
 from copy import deepcopy, copy
 
@@ -200,8 +200,8 @@ class apigeeXManagementAPI():
             endpoint_url = f"{self.base_x_url}/{self.project_name}/developers"
         headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
         data=self.processRequest(endpoint_url,headers)
-        if not developers_email:
-            data=list(filter(lambda k: 'devteam.apigee.io' not in k['email'], data['developer']))
+        # if not developers_email:
+        #     data=list(filter(lambda k: 'devteam.apigee.io' in k['email'], data['developer']))
         return data
     def getEdgeTeams(self):
         endpoint_url = f"{self.base_edge_url}/{self.org_name}/teams"
@@ -211,13 +211,13 @@ class apigeeXManagementAPI():
         return data
     def batchMigrateDeveloper(self):
         devs=self.getEdgeDevelopers()
-        results={"created":0,"alreadyExisted":0,"otherErrors":0}
+        results={"created":0,"updatedExisted":0,"otherErrors":0}
         for dev in devs:
             developer_account=self.getEdgeDevelopers(dev)
             data=self.setXDeveloper(developer_account)
             if 'error' in data:
                 if data['error']['code']==409:
-                    results["alreadyExisted"]=results["alreadyExisted"] +1
+                    results["updatedExisted"]=results["updatedExisted"] +1
                 else:
                     results["otherErrors"]=results["otherErrors"] +1
             else:
@@ -228,7 +228,12 @@ class apigeeXManagementAPI():
         headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
         #Clean up Edge to X
         data=self.cleanupEdge2X(data)
-        data=self.processRequest(endpoint_url,headers,method='post',data=data)
+        method='post'
+        existing_developer=self.getXDevelopers(developers_email=data['email'])
+        if 'email' in existing_developer:
+            endpoint_url=f"{self.base_x_url}/{self.project_name}/developers/{data['email']}"
+            method='put'
+        data=self.processRequest(endpoint_url,headers,method=method,data=data)
         #pprint(data)
         return data
     def setSingleXApp(self,developer_email,app_name):
@@ -382,10 +387,11 @@ class apigeeXManagementAPI():
         return result
     def batchDeleteDevelopers(self):
         devs = self.getXDevelopers()
-        for dev in devs:
+        for dev in devs['developer']:
             endpoint_url = f"{self.base_x_url}/{self.project_name}/developers/{dev['email']}"
             headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
-            self.processRequest(endpoint_url,headers,method='delete',data={})
+            data=self.processRequest(endpoint_url,headers,method='delete',data={})
+            print(data)
         return True
     def batchDeleteProducts(self):
         products=self.getXProducts()

@@ -200,8 +200,6 @@ class apigeeXManagementAPI():
             endpoint_url = f"{self.base_x_url}/{self.project_name}/developers"
         headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
         data=self.processRequest(endpoint_url,headers)
-        # if not developers_email:
-        #     data=list(filter(lambda k: 'devteam.apigee.io' in k['email'], data['developer']))
         return data
     def getEdgeTeams(self):
         endpoint_url = f"{self.base_edge_url}/{self.org_name}/teams"

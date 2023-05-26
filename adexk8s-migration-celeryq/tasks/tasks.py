@@ -38,7 +38,7 @@ def getProductsAppsbyProxy(org_name,proxy,hide_keys=True):
     return result
 
 @app.task()
-def batchDeveloperWorkflow(source_org,destination_project):
+def batchCreateDeveloperWorkflow(source_org,destination_project):
     """
     Sync Developer between Apigee Edge and Apigee X
     :params source_org string Apigee Edge Organization
@@ -52,7 +52,7 @@ def batchDeveloperWorkflow(source_org,destination_project):
     results=api.batchMigrateDeveloper()
     return results
 @app.task()
-def batchProductWorkflow(source_org,destination_project):
+def batchCreateProductWorkflow(source_org,destination_project):
     """
     Sync Products between Apigee Edge and Apigee X
     :params source_org string Apigee Edge Organization
@@ -66,7 +66,7 @@ def batchProductWorkflow(source_org,destination_project):
     results=api.batchMigrateProducts()
     return results
 @app.task()
-def batchAppsWorkflow(source_org,destination_project):
+def batchCreateAppsWorkflow(source_org,destination_project):
     """
     Sync Apps between Apigee Edge and Apigee X
     :params source_org string Apigee Edge Organization

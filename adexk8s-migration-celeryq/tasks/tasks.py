@@ -1,6 +1,6 @@
 from celery import Celery
 import celeryconfig
-from .migration import apigeeEdgeManagementAPI, apigeeXManagementAPI
+from migration import apigeeEdgeManagementAPI, apigeeXManagementAPI
 
 app = Celery()
 app.config_from_object(celeryconfig)
@@ -75,4 +75,22 @@ def batchAppsWorkflow(source_org,destination_project):
         }
     api=apigeeXManagementAPI(source_org,destination_project,service_account_key_paths)
     results=api.batchMigrateApps()
+    return results
+@app.task()
+def batchDeleteDevelopersAppsWorkflow(source_org,destination_project,developer_email=None):
+    """
+    Delete Developers and Apps associated with Developer. 
+    :params source_org string Apigee Edge Organization
+    :params destination_project string Apigee X Project
+    :params developer_email string optional Delete only a single Developer and associated Apps
+    """
+    service_account_key_paths={
+        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test.json",
+        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev.json"
+        }
+    api=apigeeXManagementAPI(source_org,destination_project,service_account_key_paths)
+    if developer_email:
+        results=api.batchDeleteDevelopers(developer_email)
+    else:
+        results=api.batchDeleteDevelopers()
     return results

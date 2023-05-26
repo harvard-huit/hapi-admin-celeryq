@@ -94,3 +94,33 @@ def batchDeleteDevelopersAppsWorkflow(source_org,destination_project,developer_e
     else:
         results=api.batchDeleteDevelopers()
     return results
+
+@app.task()
+def batchDeleteProductsWorkflow(source_org,destination_project):
+    """
+    Delete Products. 
+    :params source_org string Apigee Edge Organization
+    :params destination_project string Apigee X Project
+    """
+    service_account_key_paths={
+        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test.json",
+        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev.json"
+        }
+    api=apigeeXManagementAPI(source_org,destination_project,service_account_key_paths)
+    results=api.batchDeleteProducts()
+    return results
+
+@app.task()
+def batchDeleteAppsWorkflow(source_org,destination_project):
+    """
+    Delete Apps. 
+    :params source_org string Apigee Edge Organization
+    :params destination_project string Apigee X Project
+    """
+    service_account_key_paths={
+        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test.json",
+        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev.json"
+        }
+    api=apigeeXManagementAPI(source_org,destination_project,service_account_key_paths)
+    results=api.batchDeleteApps()
+    return results

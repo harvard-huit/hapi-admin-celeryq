@@ -380,29 +380,28 @@ class apigeeXManagementAPI():
             headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
             data=self.processRequest(endpoint_url,headers,method='delete',data={})
             print(data)
-        return True
+        result={"deletedDevelopers":len(devs["developer"])}
+        return result
     def batchDeleteProducts(self):
         products=self.getXProducts()
         for itm in products["apiProduct"]:
             endpoint_url=f"{self.base_x_url}/{self.project_name}/apiproducts/{itm['name']}"
             headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
             self.processRequest(endpoint_url,headers,method='delete',data={})
-        return True
+        result={"deletedProducts":len(products["apiProduct"])}
+        return result
     def batchDeleteApps(self):
         """
         Delete all Apps for all Developers
         """
         devs=self.getXDevelopers()
-        results={"created":0,"alreadyExisted":0,"otherErrors":0}
+        results={"deletedApps":0}
         for dev in devs:
             apps=self.getXApps(dev['email'])
-            print(apps)
             if 'app' in apps:
                 for app in apps['app']:
-                    #data=self.setSingleXApp(dev,app['name'])
                     endpoint_url = f"{self.base_x_url}/{self.project_name}/developers/{dev['email']}/apps/{app['appId']}"
                     headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
                     result=self.processRequest(endpoint_url,headers,method='delete',data={})
-                    print(result)
-
-        return True
+                    results["deletedApps"]=results["deletedApps"] +1
+        return results

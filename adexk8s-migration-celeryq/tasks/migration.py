@@ -369,8 +369,12 @@ class apigeeXManagementAPI():
         headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}
         result=self.processRequest(endpoint_url,headers,method='delete')
         return result
-    def batchDeleteDevelopers(self):
-        devs = self.getXDevelopers()
+    def batchDeleteDevelopers(self,developer_email=None):
+        if developer_email:
+            devs={}
+            devs['developer']=[developer_email]
+        else:
+            devs = self.getXDevelopers()
         for dev in devs['developer']:
             endpoint_url = f"{self.base_x_url}/{self.project_name}/developers/{dev['email']}"
             headers = {"Authorization": f"Bearer {self.xTokenFactory.token(self.project_name)}"}

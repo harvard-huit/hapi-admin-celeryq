@@ -1,7 +1,7 @@
 adexk8s-migration-celeryq Queue
 ======================
 
-Tasks to manage Apigee Consumer Apps and Developers
+Tasks to manage Apigee Consumer Apps and Developers. Migration from Apigee Edge to Apigee X. Admin tasks for HAPI team.
 
 Requirements
 ------------

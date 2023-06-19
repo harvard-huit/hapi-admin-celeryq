@@ -4,6 +4,10 @@ try:
     from migration import apigeeEdgeManagementAPI, apigeeXManagementAPI
 except:
     from .migration import apigeeEdgeManagementAPI, apigeeXManagementAPI
+try:
+    from principal import apigeeXPrincipal
+except:
+    from .principal import apigeeXPrincipal
 
 app = Celery()
 app.config_from_object(celeryconfig)
@@ -127,3 +131,59 @@ def batchDeleteAppsWorkflow(source_org,destination_project):
     api=apigeeXManagementAPI(source_org,destination_project,service_account_key_paths)
     results=api.batchDeleteApps()
     return results
+
+@app.task()
+def searchGoogleGroups(search_term,function="group_key",operator="startsWith"):
+    """
+    Search for Google Groups. Group must contain the service account accociate with the class.
+    params: search_term (string): required; search term that will be used to search for groups.
+    params: function (string): optional; Values: group_key (default), display_name
+    params: operator (string): optional; Values: startsWith (default), contains 
+    """
+    service_account_key_paths={
+        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test.json",
+        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev.json"
+        }
+    # Dev service account associated with groups
+    api=apigeeXPrincipal("apigee-x-poc-dev",service_account_key_paths)
+    result=api.search_google_groups(search_term,function=function,operator=operator)
+    if 'groups' in result:
+        result=result['groups']
+    return result  
+
+@app.task()
+def assignTenantGroupName(group_id,tenant_name):
+    """
+    Assign Group Name and Group Key
+    params: group_id string format groups/{groupId}
+    params: tenant_name (string): The new tenant name changes group key and name
+    """
+    service_account_key_paths={
+        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test.json",
+        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev.json"
+        }
+    # Dev service account associated with groups
+    api=apigeeXPrincipal("apigee-x-poc-dev",service_account_key_paths)
+    # Change Group Name and Key ID
+    name_change=api.update_group_name(group_id,tenant_name)
+    name_change=api.update_group_key(group_id,tenant_name)
+    return name_change
+
+@app.task()
+def assignPrincipal2ApigeeProjects(members,tenant_name,roles=None):
+    #members,roles, tenant_name
+    """
+    Assign Group Name and Group Key
+    params: group_id string format groups/{groupId}
+    params: tenant_name (string): The new tenant name changes group key and name
+    """
+    service_account_key_paths={
+        "apigee-x-poc-test":"/xkeys/apigee-x-poc-test.json",
+        "apigee-x-poc-dev":"/xkeys/apigee-x-poc-dev.json"
+        }
+    result=[]
+    for env in service_account_key_paths:
+        api=apigeeXPrincipal(env,service_account_key_paths)
+        api.add_principle_to_project(members,tenant_name)
+        result.append({"project":env,"principal":members})
+    return result 

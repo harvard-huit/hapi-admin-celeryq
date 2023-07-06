@@ -153,8 +153,7 @@ def searchGoogleGroups(search_term,function="group_key",operator="startsWith"):
 
 @app.task()
 def assignTenantGroupName(group_id,tenant_name):
-    """
-    Assign Group Name and Group Key
+    """Assign Group Name and Group Key
     params: group_id string format groups/{groupId}
     params: tenant_name (string): The new tenant name changes group key and name
     """
@@ -174,8 +173,9 @@ def assignPrincipal2ApigeeProjects(members,tenant_name,roles=None):
     #members,roles, tenant_name
     """
     Assign Group Name and Group Key
-    params: group_id string format groups/{groupId}
-    params: tenant_name (string): The new tenant name changes group key and name
+    params: members (list): members to add to the project eg. ['group:apigee-adex@g.harvard.edu']
+    params: tenant_name (string): name of tenant eg. adex
+    params: roles (list): optional; roles to add to the principal eg. ['roles/apigee.apiAdminV2']
     """
     service_account_key_paths={
         "apigee-x-poc-test":"/xkeys/apigee-x-poc-test.json",

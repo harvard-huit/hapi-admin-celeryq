@@ -47,7 +47,7 @@ class apigeeXPrincipal():
         
         """
         if not roles:
-            roles=self.defRoles()
+            roles=self.defineRoles()
         project_policy = self.service.projects().getIamPolicy(resource=self.project_name, body={"options":{"requestedPolicyVersion": 3}}).execute()
         # TODO check condition with RW and RO
         # Rethinking this may be the only condition with the role passed will limit RW and RO

@@ -38,6 +38,7 @@ class apigeeXPrincipal():
             roles=['roles/apigee.apiAdminV2']
         else:
             roles=['roles/apigee.readOnlyAdmin']
+        return roles
     def add_principle_to_project(self,members, tenant_name,roles=None ):
         """
         Add Principal to Apigee X Project

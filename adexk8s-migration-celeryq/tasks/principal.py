@@ -68,8 +68,8 @@ class apigeeXPrincipal():
                     """ 
         for role in roles:
             new_binding={'role':role,'members':members,'condition':{
-                'expression':condition,'title':f"Tenant {tenant_name.upper()} condition",
-                'description':f"Tenant {tenant_name.upper()} condition"}
+                'expression':condition,'title':f"{tenant_name.upper()} Tenant",
+                'description':f"{tenant_name.upper()} Tenant"}
             }
             project_policy['bindings'].append(new_binding)
         response = self.service.projects().setIamPolicy(resource=self.project_name, body={"policy":project_policy}).execute()

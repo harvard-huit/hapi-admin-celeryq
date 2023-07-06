@@ -82,7 +82,7 @@ class apigeeXPrincipal():
         params: update_name string The new name
         """
         service=self.__getService__(serviceName="cloudidentity")
-        group= {"displayName":updated_name }
+        group= {"displayName": f"{updated_name.lower()}-apigee-developer" }
         updated_group = service.groups().patch(name=f'{group_id}',updateMask="displayName", body=group).execute()
         return updated_group
     
@@ -93,7 +93,7 @@ class apigeeXPrincipal():
         params: update_name string The new key name (this is a mail name portion of key. NOT THE Entire EMAIL)
         """
         service=self.__getService__(serviceName="cloudidentity")
-        group= {"groupKey":{"id":f"{update_name}@g.harvard.edu"}}
+        group= {"groupKey":{"id":f"{update_name.lower()}-apigee-developer@g.harvard.edu"}}
         updated_group = service.groups().patch(name=f'{group_id}',updateMask="groupKey", body=group).execute()
         return updated_group
     

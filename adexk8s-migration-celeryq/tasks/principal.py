@@ -37,8 +37,12 @@ class apigeeXPrincipal():
         if 'dev' in self.project_name.lower():
             roles=['roles/apigee.apiAdminV2']
         else:
-            roles=['roles/apigee.readOnlyAdmin']
+            roles=['roles/apigee.apiReaderV2']
         return roles
+    def returnPolicy(self):
+        project_policy = self.service.projects().getIamPolicy(resource=self.project_name, body={"options":{"requestedPolicyVersion": 3}}).execute()
+        return project_policy
+        
     def add_principle_to_project(self,members, tenant_name,roles=None ):
         """
         Add Principal to Apigee X Project

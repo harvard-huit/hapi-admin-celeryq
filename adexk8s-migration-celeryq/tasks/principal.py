@@ -20,7 +20,7 @@ class apigeeXPrincipal():
                     ]
         )
         # Create the service client
-        service = discovery.build(serviceName, version, credentials=credentials)
+        service = discovery.build(serviceName, version, credentials=credentials,cache_discovery=False )
         return service
     def getXPrincipal(self,principal_email=None):
         project_policy = self.service.projects().getIamPolicy(resource=self.project_name, body={"options":{"requestedPolicyVersion": 3}}).execute()
